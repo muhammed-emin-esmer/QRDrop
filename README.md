@@ -6,7 +6,7 @@ Dateien zwischen PC und Handy austauschen, ohne Kabel, Account oder Cloud. Das H
 
 1. `QRDrop.exe` starten (Windows, 64-bit). Es öffnet sich ein Fenster mit einem QR-Code.
 2. Mit dem Handy scannen. Handy und PC müssen im selben WLAN sein.
-3. **Handy → PC:** Auf der Seite „Dateien senden“ tippen. Die Dateien landen in `Downloads\Vom Handy`.
+3. **Handy → PC:** Auf der Seite „Dateien senden“ tippen. Die Dateien landen in `Downloads\QRDrop`.
 4. **PC → Handy:** Dateien auf das App-Fenster ziehen. Sie erscheinen auf der Handy-Seite unter „Vom PC“.
 
 Beim ersten Start fragt die Windows-Firewall, ob das Programm erreichbar sein darf. „Privates Netzwerk“ muss erlaubt werden.
