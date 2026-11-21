@@ -23,7 +23,7 @@ struct App {
 fn main() -> eframe::Result {
     let save_dir = dirs::download_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join("Vom Handy");
+        .join("QRDrop");
     std::fs::create_dir_all(&save_dir).expect("Zielordner konnte nicht angelegt werden");
 
     let listener = TcpListener::bind("0.0.0.0:0").expect("Port konnte nicht geöffnet werden");
@@ -43,12 +43,16 @@ fn main() -> eframe::Result {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([380.0, 600.0])
-            .with_min_inner_size([320.0, 480.0]),
+            .with_min_inner_size([320.0, 480.0])
+            .with_icon(
+                eframe::icon_data::from_png_bytes(include_bytes!("../assets/icon.png"))
+                    .expect("Icon ungültig"),
+            ),
         ..Default::default()
     };
 
     eframe::run_native(
-        "Handy Transfer",
+        "QRDrop",
         options,
         Box::new(move |cc| {
             let (tx, rx) = channel();
@@ -69,7 +73,7 @@ impl eframe::App for App {
 
         ui.vertical_centered(|ui| {
             ui.add_space(8.0);
-            ui.heading("Handy Transfer");
+            ui.heading("QRDrop");
             ui.label("Mit dem Handy scannen (gleiches WLAN)");
             ui.add_space(8.0);
             draw_qr(ui, &self.qr, 260.0);
