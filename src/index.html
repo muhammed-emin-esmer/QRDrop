@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handy Transfer</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 24px 16px; max-width: 480px; margin-inline: auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 20px; }
+  label.btn, button.btn {
+    display: block; width: 100%; box-sizing: border-box; text-align: center;
+    padding: 22px 16px; margin-bottom: 14px; border: 0; border-radius: 16px;
+    background: #2563eb; color: #fff; font-size: 1.2rem; font-weight: 600; cursor: pointer;
+  }
+  input[type=file] { display: none; }
+  ul { list-style: none; padding: 0; margin: 20px 0 0; }
+  li { margin-bottom: 12px; font-size: .95rem; word-break: break-all; }
+  progress { width: 100%; height: 10px; }
+  h2 { font-size: 1.1rem; margin: 28px 0 0; }
+  a.dl { display: block; padding: 16px; border-radius: 12px; background: #16a34a; color: #fff; text-decoration: none; font-weight: 600; }
+  .hint { opacity: .6; }
+  .ok { color: #16a34a; } .err { color: #dc2626; }
+</style>
+</head>
+<body>
+<h1>Handy Transfer</h1>
+<label class="btn">Dateien senden
+  <input id="files" type="file" multiple>
+</label>
+<ul id="list"></ul>
+<h2>Vom PC</h2>
+<ul id="pc"><li class="hint">Noch nichts vom PC freigegeben.</li></ul>
+<script>
+const pc = document.getElementById('pc');
+let lastJson = '';
+
+function size(n) {
+  const u = ['B', 'KB', 'MB', 'GB'];
+  let i = 0;
+  while (n >= 1024 && i < 3) { n /= 1024; i++; }
+  return (i ? n.toFixed(1) : n) + ' ' + u[i];
+}
+
+async function refresh() {
+  try {
+    const res = await fetch('files', { cache: 'no-store' });
+    const text = await res.text();
+    if (text === lastJson) return;
+    lastJson = text;
+    const files = JSON.parse(text);
+    pc.textContent = '';
+    if (!files.length) {
+      const li = document.createElement('li');
+      li.className = 'hint';
+      li.textContent = 'Noch nichts vom PC freigegeben.';
+      pc.appendChild(li);
+    }
+    for (const f of files) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.className = 'dl';
+      a.href = 'download/' + f.id;
+      a.download = f.name;
+      a.textContent = f.name + ' (' + size(f.size) + ')';
+      li.appendChild(a);
+      pc.appendChild(li);
+    }
+  } catch (e) { /* PC nicht erreichbar, beim nächsten Durchlauf erneut versuchen */ }
+}
+refresh();
+setInterval(refresh, 2000);
+</script>
+<script>
+const input = document.getElementById('files');
+const list = document.getElementById('list');
+
+input.addEventListener('change', () => {
+  for (const file of input.files) send(file);
+  input.value = '';
+});
+
+function send(file) {
+  const li = document.createElement('li');
+  li.textContent = file.name + ' ';
+  const bar = document.createElement('progress');
+  bar.max = 100; bar.value = 0;
+  li.appendChild(bar);
+  list.prepend(li);
+
+  const form = new FormData();
+  form.append('file', file, file.name);
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', 'upload');
+  xhr.upload.onprogress = e => { if (e.lengthComputable) bar.value = e.loaded / e.total * 100; };
+  xhr.onload = () => done(li, bar, xhr.status === 200, file.name);
+  xhr.onerror = () => done(li, bar, false, file.name);
+  xhr.send(form);
+}
+
+function done(li, bar, ok, name) {
+  li.textContent = (ok ? '✓ ' : '✗ ') + name;
+  li.className = ok ? 'ok' : 'err';
+}
+</script>
+</body>
+</html>
